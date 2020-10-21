@@ -1,0 +1,46 @@
+# test.yml
+
+
+---
+- hosts: localhost
+  gather_facts: no
+  tasks:
+    - debug: msg=Hello
+  tasks:
+    - name: Ansible check directory.
+      stat:
+       path: /tmp/devops/jboss
+      register: my_folder
+
+    - name: "echo if directory already existed"
+      debug:
+        msg: "the jboss directory is already existed"
+      when: my_folder.stat.exists
+
+    - name: "Ansible Create directory if not exists"
+      file:
+       path: /tmp/devops/jboss
+       state: directory
+       mode: 0755
+       group: root
+       owner: root
+      when: my_folder.stat.exists == false
+
+    - name: "Create multiple directories in a loop"
+      file:
+        path: "/tmp/devops/jboss/{{ item }}"
+        state: directory
+      register: file_output
+      loop:
+        - inbound
+        - outbound
+    - name: Copy file with owner and permissions
+      copy:
+        src: /etc/ansible/start.sh
+        dest: "/tmp/devops/jboss/{{ item }}/start.sh"
+        owner: root
+        group: root
+        mode: '0644'
+      loop:
+        - inbound
+        - outbound
